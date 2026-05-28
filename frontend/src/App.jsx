@@ -1,186 +1,239 @@
-// import { useState } from 'react'
-// import reactLogo from './assets/react.svg'
-// import viteLogo from './assets/vite.svg'
-// import heroImg from './assets/hero.png'
-// import './App.css'
-
-// function App() {
-//   const [count, setCount] = useState(0)
-
-//   return (
-//     <>
-//       <section id="center">
-//         <div className="hero">
-//           <img src={heroImg} className="base" width="170" height="179" alt="" />
-//           <img src={reactLogo} className="framework" alt="React logo" />
-//           <img src={viteLogo} className="vite" alt="Vite logo" />
-//         </div>
-//         <div>
-//           <h1>Get started</h1>
-//           <p>
-//             Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-//           </p>
-//         </div>
-//         <button
-//           type="button"
-//           className="counter"
-//           onClick={() => setCount((count) => count + 1)}
-//         >
-//           Count is {count}
-//         </button>
-//       </section>
-
-//       <div className="ticks"></div>
-
-//       <section id="next-steps">
-//         <div id="docs">
-//           <svg className="icon" role="presentation" aria-hidden="true">
-//             <use href="/icons.svg#documentation-icon"></use>
-//           </svg>
-//           <h2>Documentation</h2>
-//           <p>Your questions, answered</p>
-//           <ul>
-//             <li>
-//               <a href="https://vite.dev/" target="_blank">
-//                 <img className="logo" src={viteLogo} alt="" />
-//                 Explore Vite
-//               </a>
-//             </li>
-//             <li>
-//               <a href="https://react.dev/" target="_blank">
-//                 <img className="button-icon" src={reactLogo} alt="" />
-//                 Learn more
-//               </a>
-//             </li>
-//           </ul>
-//         </div>
-//         <div id="social">
-//           <svg className="icon" role="presentation" aria-hidden="true">
-//             <use href="/icons.svg#social-icon"></use>
-//           </svg>
-//           <h2>Connect with us</h2>
-//           <p>Join the Vite community</p>
-//           <ul>
-//             <li>
-//               <a href="https://github.com/vitejs/vite" target="_blank">
-//                 <svg
-//                   className="button-icon"
-//                   role="presentation"
-//                   aria-hidden="true"
-//                 >
-//                   <use href="/icons.svg#github-icon"></use>
-//                 </svg>
-//                 GitHub
-//               </a>
-//             </li>
-//             <li>
-//               <a href="https://chat.vite.dev/" target="_blank">
-//                 <svg
-//                   className="button-icon"
-//                   role="presentation"
-//                   aria-hidden="true"
-//                 >
-//                   <use href="/icons.svg#discord-icon"></use>
-//                 </svg>
-//                 Discord
-//               </a>
-//             </li>
-//             <li>
-//               <a href="https://x.com/vite_js" target="_blank">
-//                 <svg
-//                   className="button-icon"
-//                   role="presentation"
-//                   aria-hidden="true"
-//                 >
-//                   <use href="/icons.svg#x-icon"></use>
-//                 </svg>
-//                 X.com
-//               </a>
-//             </li>
-//             <li>
-//               <a href="https://bsky.app/profile/vite.dev" target="_blank">
-//                 <svg
-//                   className="button-icon"
-//                   role="presentation"
-//                   aria-hidden="true"
-//                 >
-//                   <use href="/icons.svg#bluesky-icon"></use>
-//                 </svg>
-//                 Bluesky
-//               </a>
-//             </li>
-//           </ul>
-//         </div>
-//       </section>
-
-//       <div className="ticks"></div>
-//       <section id="spacer"></section>
-//     </>
-//   )
-// }
-
-// export default App
-
-
-
-
 import { useState } from "react";
  
 function App() {
  
-  const [patientId, setPatientId] = useState("");
+  const [message, setMessage] = useState("");
 
-  const [result, setResult] = useState(null);
+  const [chat, setChat] = useState([]);
  
-  const analyzePatient = async () => {
+  const sendMessage = async () => {
  
-    const response = await fetch(
+    if (!message) return;
+ 
+    const userMessage = {
 
-      `http://127.0.0.1:8000/analyze/${patientId}`
+      role: "user",
 
-    );
+      content: message
+
+    };
  
-    const data = await response.json();
+    setChat((prev) => [...prev, userMessage]);
  
-    setResult(data);
+    try {
+ 
+      // Example:
+
+      // "analyze 1"
+ 
+      const patientId = message.split(" ")[1];
+ 
+      const response = await fetch(
+
+        `http://127.0.0.1:8000/analyze/${patientId}`
+
+      );
+ 
+      const data = await response.json();
+ 
+      const aiMessage = {
+
+        role: "assistant",
+
+        content: JSON.stringify(data, null, 2)
+
+      };
+ 
+      setChat((prev) => [
+
+        ...prev,
+
+        aiMessage
+
+      ]);
+ 
+    } catch (error) {
+ 
+      const errorMessage = {
+
+        role: "assistant",
+
+        content: "Error connecting to backend"
+
+      };
+ 
+      setChat((prev) => [
+
+        ...prev,
+
+        errorMessage
+
+      ]);
+
+    }
+ 
+    setMessage("");
 
   };
  
   return (
-<div style={{ padding: "40px" }}>
+ 
+    <div
+
+      style={{
+
+        maxWidth: "800px",
+
+        margin: "auto",
+
+        padding: "20px",
+
+        fontFamily: "Arial"
+
+      }}
+>
  
       <h1>AI Hospital Assistant</h1>
  
-      <input
+      <div
 
-        type="text"
+        style={{
 
-        placeholder="Enter Patient ID"
+          border: "1px solid gray",
 
-        value={patientId}
+          height: "500px",
 
-        onChange={(e) => setPatientId(e.target.value)}
+          overflowY: "auto",
 
-      />
+          padding: "20px",
+
+          marginBottom: "20px"
+
+        }}
+>
  
-      <button onClick={analyzePatient}>
+        {chat.map((msg, index) => (
+ 
+          <div
 
-        Analyze
-</button>
- 
-      {result && (
-<div style={{ marginTop: "30px" }}>
- 
-          <h2>Patient: {result.patient}</h2>
- 
-          <pre>
+            key={index}
 
-            {JSON.stringify(result, null, 2)}
+            style={{
+
+              marginBottom: "20px",
+
+              textAlign:
+
+                msg.role === "user"
+
+                  ? "right"
+
+                  : "left"
+
+            }}
+>
+ 
+            <div
+
+              style={{
+
+                display: "inline-block",
+
+                padding: "10px",
+
+                borderRadius: "10px",
+
+                background:
+
+                  msg.role === "user"
+
+                    ? "#007bff"
+
+                    : "#f1f1f1",
+
+                color:
+
+                  msg.role === "user"
+
+                    ? "white"
+
+                    : "black",
+
+                maxWidth: "70%"
+
+              }}
+>
+ 
+              <pre
+
+                style={{
+
+                  whiteSpace: "pre-wrap"
+
+                }}
+>
+
+                {msg.content}
 </pre>
  
-        </div>
+            </div>
+ 
+          </div>
+ 
+        ))}
+ 
+      </div>
+ 
+      <div
 
-      )}
+        style={{
+
+          display: "flex",
+
+          gap: "10px"
+
+        }}
+>
+ 
+        <input
+
+          type="text"
+
+          placeholder="Type: analyze 1"
+
+          value={message}
+
+          onChange={(e) =>
+
+            setMessage(e.target.value)
+
+          }
+
+          style={{
+
+            flex: 1,
+
+            padding: "10px"
+
+          }}
+
+        />
+ 
+        <button
+
+          onClick={sendMessage}
+
+          style={{
+
+            padding: "10px 20px"
+
+          }}
+>
+
+          Send
+</button>
+ 
+      </div>
  
     </div>
 
